@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-configfile = "/opt/merger/dataFlowMerger.conf"
-pidFile ="/var/run/dfMerger.pid"
+#configfile = "/opt/merger/dataFlowMerger.conf"
+#configfile = "dataFlowMergerMini.conf"
+configfile = "dataFlowMergerMacro.conf"
 
 import sys, os, socket, signal
-from Daemon import Daemon
 
 from configobj import ConfigObj
 from Logging import getLogger
@@ -57,40 +57,14 @@ def get_params():
 
 
 
-class DataFlowMerger(Daemon):
-    running = True
+def DataFlowMerger():
 
-    def cleanUp(self, sigNum = None, frame = None):
-        log.debug('Cleaning up...')
-        if os.path.isfile(self.pidfile):
-            os.remove(self.pidfile)
-        self.running = False
+   [inPath, eolPath, outPath, smPath, adLabel, mType, delOrigFiles, debugLevel] = get_params()
 
-    def run(self):
+   log.info("delFiles: {0}".format(delOrigFiles))
 
-        [inPath, eolPath, outPath, smPath, adLabel, mType, delOrigFiles, debugLevel] = get_params()
-
-        log.info("delFiles: {0}".format(delOrigFiles))
-
-        cmsDataFlowMerger.start_merging(inPath, eolPath, mType, outPath, smPath, adLabel, delOrigFiles, debugLevel)
+   cmsDataFlowMerger.start_merging(inPath, eolPath, mType, outPath, smPath, adLabel, delOrigFiles, debugLevel)
 
 if __name__ == "__main__":
 
-    daemon = DataFlowMerger(pidFile)
-
-    if len(sys.argv) == 2:
-        if 'start' == sys.argv[1]:
-            daemon.start()
-        elif 'stop' == sys.argv[1]:
-            daemon.stop()
-        elif 'restart' == sys.argv[1]:
-            daemon.restart()
-        elif 'status' == sys.argv[1]:
-            daemon.status()
-        else:
-            print "Unknown command"
-            sys.exit(2)
-        sys.exit(0)
-    else:
-        print "Usage: %s start|stop|restart|status" % sys.argv[0]
-        sys.exit(2)
+    DataFlowMerger()
